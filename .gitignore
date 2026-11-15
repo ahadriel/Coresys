@@ -1,0 +1,6 @@
+/build/
+*.log
+*.img
+*.iso
+*.EFI
+__pycache__/

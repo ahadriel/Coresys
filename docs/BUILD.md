@@ -33,3 +33,7 @@ OVMF firmware is searched under `/usr/share/OVMF` and `/usr/share/edk2/ovmf`. In
 ## Reproducibility
 
 Set `SOURCE_DATE_EPOCH` to the commit timestamp. LLD uses `/Brepro`; GPT identifiers derive from the EFI binary hash; xorriso receives a fixed volume timestamp. CI creates `build/manifest.json` containing tool versions and SHA-256 hashes.
+
+## CI artifact storage
+
+CI bundles the GPT disk image, FAT32 ESP, ISO, serial log and manifest into a gzip archive before upload. This matters because GitHub Actions artifact storage quotas vary by plan (currently 500 MB for Free, 1 GB for Pro, 2 GB for Team and 50 GB for Enterprise); the raw M0 images together are about 385 MiB before compression. Artifacts are retained for 14 days. See the [GitHub Actions limits](https://docs.github.com/en/actions/reference/limits) for current storage quotas.

@@ -1,0 +1,54 @@
+name: Coresys M0
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  m0:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache apt archives
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/coresys/apt-archives
+          key: ubuntu-24.04-coresys-m0-clang18-lld18-v1
+      - name: Install dependencies
+        run: |
+          mkdir -p "$HOME/.cache/coresys/apt-archives/partial"
+          chmod -R a+rwX "$HOME/.cache/coresys/apt-archives"
+          sudo apt-get update
+          sudo apt-get -o Dir::Cache::archives="$HOME/.cache/coresys/apt-archives" install -y \
+            clang-18 lld-18 nasm mtools xorriso qemu-system-x86 ovmf python3 make
+      - name: Verify toolchain
+        run: |
+          clang-18 --version
+          lld-link-18 /version
+          python3 --version
+          test "$(clang-18 --version | head -n1 | grep -oE '[0-9]+' | head -n1)" = "18"
+      - name: Build and boot-test
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          make clean
+          make all
+          make test
+      - name: Upload M0 artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coresys-m0-${{ github.sha }}
+          path: |
+            build/coresys-disk.img
+            build/coresys-esp.img
+            build/coresys.iso
+            build/serial.log
+            build/manifest.json
+          if-no-files-found: warn
+          compression-level: 9
+          retention-days: 14

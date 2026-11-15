@@ -27,7 +27,7 @@ jobs:
       - name: Verify toolchain
         run: |
           clang-18 --version
-          lld-link-18 /version
+          ld.lld-18 --version
           python3 --version
           test "$(clang-18 --version | head -n1 | grep -oE '[0-9]+' | head -n1)" = "18"
       - name: Build and boot-test

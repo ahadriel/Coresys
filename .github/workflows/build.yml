@@ -38,17 +38,21 @@ jobs:
           make clean
           make all
           make test
+      - name: Compress M0 artifacts
+        if: always()
+        run: |
+          if test -f build/manifest.json; then
+            tar -czf build/coresys-m0-bundle.tar.gz -C build coresys-disk.img coresys-esp.img coresys.iso serial.log manifest.json
+          fi
+
       - name: Upload M0 artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coresys-m0-${{ github.sha }}
           path: |
-            build/coresys-disk.img
-            build/coresys-esp.img
-            build/coresys.iso
-            build/serial.log
+            build/coresys-m0-bundle.tar.gz
             build/manifest.json
           if-no-files-found: warn
-          compression-level: 9
+          compression-level: 0
           retention-days: 14

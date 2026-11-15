@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse,hashlib,os,shutil,struct,subprocess,uuid,zlib
+import argparse,datetime,hashlib,os,shutil,struct,subprocess,uuid,zlib
 from pathlib import Path
 SECTOR=512
 ESP_BYTES=128*1024*1024
@@ -37,7 +37,7 @@ def main():
     run(["mcopy","-i",img,str(efi),"::/EFI/BOOT/BOOTX64.EFI"])
     make_disk(esp,disk,hashlib.sha256(efi.read_bytes()).digest())
     root=out/"iso-root"; root.mkdir(exist_ok=True); shutil.copyfile(esp,root/esp.name)
-    stamp=f"{int(os.getenv('SOURCE_DATE_EPOCH','0')):08x}"
+    stamp=datetime.datetime.fromtimestamp(int(os.getenv("SOURCE_DATE_EPOCH","0")),datetime.timezone.utc).strftime("%Y%m%d%H%M%S00")
     run(["xorriso","-as","mkisofs","-r","-J","-V","CORESYS","-uid","0","-gid","0",
       "-volume_date",f"all_file_dates={stamp}","-o",str(iso),"-e",esp.name,"-no-emul-boot",str(root)])
     print(f"Created {esp}, {disk}, {iso}")

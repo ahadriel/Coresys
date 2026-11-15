@@ -1,8 +1,8 @@
 #include "uefi.h"
 #define COM1 0x3F8
-static inline void outb(u16 p,u8 v) { __asm__ volatile("outb %0, %1"::"a"(v),"Nd"(p)); }
+static inline void outb(u16 p,u8 v) { __asm__ volatile("outb %0, %w1"::"a"(v),"d"(p)); }
 static inline u8 serial_status(void) {
-    u8 v; __asm__ volatile("inb %1, %0":"=a"(v):"Nd"(COM1+5)); return v;
+    u8 v; __asm__ volatile("inb %w1, %0":"=a"(v):"d"((u16)(COM1+5))); return v;
 }
 static void serial_init(void) {
     outb(COM1+1,0); outb(COM1+3,0x80); outb(COM1,1);
